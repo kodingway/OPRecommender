@@ -11,7 +11,6 @@ def readGraph(city):
 
         global graph
         graph = {}
-        tempList = []
         currPOI = 0
         for row in csvReader:
             if (currPOI!=int(row[0])):
@@ -191,7 +190,6 @@ def bestRatioPlusPath(s, t, testUsers):
     totalDistance = 0
     lastVisit = s
     oldPath = []
-    swapping=False
 
     while True:
         oldPath = path.copy()
@@ -268,7 +266,6 @@ def bestRatioPlusPlusPath(s, t, testUsers):
     totalDistance = 0
     lastVisit = s
     oldPath = []
-    swapping=False
 
     while True:
         oldPath = path.copy()
@@ -355,9 +352,9 @@ bestValue=[]
 bestRatio=[]
 bestRatioPlus=[]
 bestRatioPlusPlus=[]
-#bestBUMA=[]
+
 for rep in range(totalReps):
-    #print(rep)
+
     with open('output.txt','a') as f:
         f.write("%d\n" % rep)
     
@@ -366,10 +363,8 @@ for rep in range(totalReps):
     ratioScore = []
     ratioPScore = []
     ratioPPScore = []
-    #BUMAScore = []
 
     for k in range(1, 21):
-        #print("K is "+str(k))
         testUsers = []
         testSet = random.sample(range(1,len(users)+1), k)
         for l in testSet:
@@ -381,10 +376,6 @@ for rep in range(totalReps):
         ratioScore.append(bestRatioPath(s, t, testUsers)[1])
         ratioPScore.append(bestRatioPlusPath(s, t, testUsers)[1])
         ratioPPScore.append(bestRatioPlusPlusPath(s, t, testUsers)[1])
-        #BUMAScore.append(BUMAPath(s, t, testUsers)[1])
-    #distanceScore[:]=[x/ratioScore[19] for x in distanceScore] #Normalization
-    #valueScore[:]=[x/ratioScore[19] for x in valueScore] #Normalization
-    #ratioScore[:]=[x/ratioScore[19] for x in ratioScore] #Normalization
 
     if rep == 0:
         bestDistance = distanceScore
@@ -392,21 +383,18 @@ for rep in range(totalReps):
         bestRatio = ratioScore
         bestRatioPlus = ratioPScore
         bestRatioPlusPlus = ratioPPScore
-        #bestBUMA = BUMAScore
     else:
         bestDistance = np.add(bestDistance, distanceScore)
         bestValue = np.add(bestValue, valueScore)
         bestRatio = np.add(bestRatio, ratioScore)
         bestRatioPlus = np.add(bestRatioPlus, ratioPScore)
         bestRatioPlusPlus = np.add(bestRatioPlusPlus, ratioPPScore)
-        #bestBUMA = np.add(bestBUMA, BUMAScore)
 
 bestDistance[:] = [x/totalReps for x in bestDistance]
 bestValue[:] = [x/totalReps for x in bestValue]
 bestRatio[:] = [x/totalReps for x in bestRatio]
 bestRatioPlus[:] = [x/totalReps for x in bestRatioPlus]
 bestRatioPlusPlus[:] = [x/totalReps for x in bestRatioPlusPlus]
-#bestBUMA[:] = [x/totalReps for x in bestBUMA]
 
 with open('bestValue.txt', 'w') as f1:
     for item in bestValue:
@@ -427,3 +415,28 @@ with open('bestRatioPlus.txt', 'w') as f1:
 with open('bestRatioPlusPlus.txt', 'w') as f1:
     for item in bestRatioPlusPlus:
         f1.write("%f " % item)
+
+# K-MEANS CLUSTERING
+
+# m=40    # number of users
+# k=3     # number of clusters
+# testSet = random.sample(range(1,len(users)+1), m)
+# initSet = random.sample(testSet, k) # Forgy initialization
+# centroids = [users[i] for i in initSet] 
+# clusterIds=[]
+# for i in range(k):
+#     clusterIds.append([])
+# while True:
+#     oldClusterIds = clusterIds.copy()
+#     clusterIds=[]
+#     for i in range(k):
+#         clusterIds.append([])
+#     for userId in testSet:
+#         distances=[]
+#         for centr in centroids:
+#             distances.append(np.linalg.norm(np.subtract(centr,users[userId])))
+#         clusterIds[distances.index(min(distances))].append(userId)
+#     for i in range(k):
+#         centroids[i]=list(np.mean([users[id] for id in clusterIds[i]],axis=0))
+#     if oldClusterIds==clusterIds:
+#         break
