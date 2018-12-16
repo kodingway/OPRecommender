@@ -8,7 +8,7 @@ def readGraph(city):
     with open("Dataset/" + city + "/Distances.txt") as csvFile:
         csvReader = csv.reader(csvFile, delimiter=' ')
 
-        walkSpeed = 4.5/60  # (km/min)
+        walkSpeed = 10/60  # (km/min)
 
         global graph
         graph = {}
@@ -173,7 +173,6 @@ def bestRatioPlusPath(s, t, testUsers):
             break
         path = bestPath.copy()
 
-    #print("OUT")
     while True:
         bestPath = path.copy()
         for neigh in range(1,len(graphAdj)):
@@ -193,190 +192,177 @@ def bestRatioPlusPath(s, t, testUsers):
 ############################################
 def bestRatioPlusPlusPath(s, t, testUsers):
 
-    def sortRatio(edge):
-        potDistance = totalDistance + edge[1] + stayTime[edge[0]]
-        potProfit = totalProfit + evalFunc(edge[0], testUsers)
-        if potDistance == 0:
-            return float("inf")
-        else:
-            return potProfit/potDistance
-
-    path=[s]
-    totalProfit = evalFunc(s, testUsers)
-    totalDistance = 0
-    lastVisit = s
-    oldPath = []
+    path=[s,t]
+    while True:
+        bestRatio=0
+        bestPath = path.copy()
+        for neigh in range(1,len(graphAdj)):
+            if neigh not in path:
+                potPath = path.copy()
+                potPath.insert(-1,neigh)
+                if (pathProfit(potPath,testUsers)/pathCost(potPath)>bestRatio) and (pathCost(potPath) <= B):
+                    bestPath = potPath.copy()
+                    bestRatio = pathProfit(potPath,testUsers)/pathCost(potPath)
+        if bestPath == path:
+            break
+        path = bestPath.copy()
 
     while True:
-        oldPath = path.copy()
-        graph[lastVisit].sort(key=sortRatio,reverse=True)
-        for neigh in graph[lastVisit]:
-            currProfit = evalFunc(neigh[0], testUsers)
-            if ((currProfit > 0) and (neigh[0]!=t) and (neigh[0] not in path) and (
-                    totalDistance + neigh[1] + stayTime[neigh[0]] + graphAdj[neigh[0], t] <= B)):
-                path.append(neigh[0])
-                totalProfit += currProfit
-                lastVisit = neigh[0]
-                totalDistance += neigh[1] + stayTime[neigh[0]]
-                break
-        #print(path,totalProfit/totalDistance)
-
-        if path == oldPath:
-            path.append(t)
-            totalProfit += evalFunc(t, testUsers)
-            totalDistance += graphAdj[lastVisit, t] + stayTime[t]
+        bestPath = path.copy()
+        for neigh in range(1,len(graphAdj)):
+            if neigh not in path:
+                for nodeI in range(1,len(path)-1):
+                    potPath = path.copy()
+                    potPath[nodeI] = neigh
+                    if (pathProfit(potPath,testUsers)/pathCost(potPath)>pathProfit(bestPath,testUsers)/pathCost(bestPath)) and (pathCost(potPath) <= B):
+                        bestPath = potPath.copy()
+        if bestPath == path:
             break
+        path = bestPath.copy()
 
     while True:
-        notInPath=[]
-        for x in range(1,len(graph)+1):
-            if x not in path:
-                notInPath.append(x)
-
-        swaps=[]
-        for i in range(1,len(path)-1):
-            for j in notInPath:
-                for k in notInPath:
-                    if (j!=k):
-                        if (totalDistance - graphAdj[path[i-1],path[i]] - graphAdj[path[i],path[i+1]] \
-                                + graphAdj[path[i-1],j] + graphAdj[j,path[i+1]] - graphAdj[path[-2],path[-1]] \
-                                + graphAdj[path[-2],k] + graphAdj[k,path[-1]] - stayTime[path[i]] + stayTime[j] \
-                                + stayTime[k] <= B):
-                            swaps.append((i,j,k))
-
-        maxRatio=totalProfit/totalDistance
-        maxSwap=(0,0,0)
-
-        for swap in swaps:
-            extraProfit=evalFunc(swap[1], testUsers)+evalFunc(swap[2], testUsers)-evalFunc(path[swap[0]], testUsers)
-            extraDistance=-graphAdj[path[swap[0]-1],path[swap[0]]] \
-                -graphAdj[path[swap[0]],path[swap[0]+1]]+graphAdj[path[swap[0]-1],swap[1]] \
-                +graphAdj[swap[1],path[swap[0]+1]]-graphAdj[path[-2],path[-1]]+graphAdj[path[-2],swap[2]] \
-                +graphAdj[swap[2],path[-1]] - stayTime[path[swap[0]]] + stayTime[swap[1]] + stayTime[swap[2]]
-
-            if (totalProfit+extraProfit)/(totalDistance+extraDistance)>maxRatio:
-                maxRatio=(totalProfit+extraProfit)/(totalDistance+extraDistance)
-                maxSwap=swap
-
-        if maxSwap==(0,0,0):
-            break
-        else:
-            #print("Path length is "+str(len(path))+".")
-            #print("Making swap. Old profit is "+str(totalProfit)+".")
-            totalProfit += evalFunc(maxSwap[1], testUsers)+evalFunc(maxSwap[2], testUsers) - evalFunc(path[maxSwap[0]], testUsers)
-            totalDistance += graphAdj[path[maxSwap[0]-1],maxSwap[1]] + graphAdj[maxSwap[1],path[maxSwap[0]+1]] \
-                            - graphAdj[path[maxSwap[0]-1],path[maxSwap[0]]] - graphAdj[path[maxSwap[0]],path[maxSwap[0]+1]] \
-                            - graphAdj[path[-2],path[-1]]+graphAdj[path[-2],maxSwap[2]]+graphAdj[maxSwap[2],path[-1]] \
-                            - stayTime[path[maxSwap[0]]] + stayTime[maxSwap[1]] + stayTime[maxSwap[2]]
-            path[maxSwap[0]] = maxSwap[1]
-            path[-1] = maxSwap[2]
-            path.append(t)
-            #print("New profit is "+str(totalProfit)+".")
-    #print("END")
-    return (path, totalProfit, totalDistance)
-
+        bestPath = path.copy()
+        for neigh in range(1,len(graphAdj)):
+            for neigh2 in range(1,len(graphAdj)):
+                if (neigh!=neigh2) and (neigh not in path) and (neigh2 not in path):
+                    for nodeI in range(1,len(path)-1):
+                        potPath = path.copy()
+                        potPath[nodeI] = neigh
+                        potPath.insert(-1,neigh2)
+                        if (pathProfit(potPath,testUsers)/pathCost(potPath)>pathProfit(bestPath,testUsers)/pathCost(bestPath)) and (pathCost(potPath) <= B):
+                            bestPath = potPath.copy()
+        if bestPath == path:
+            return path
+        path = bestPath.copy()
 
 ########## HEURISTICS SIMULATION & COMPARISON ##########
 ########################################################
 ########################################################
-evalFunc = satisfactionMin
-totalReps = 200
+evalFunc = satisfactionSum
+totalReps = 10
 B = 420  # Budget (minutes)
 klist=[1,2,5,10,20]
 
-bestDistance = []
-bestValue=[]
-bestRatio=[]
-bestRatioPlus=[]
-#bestRatioPlusPlus=[]
+# bestDistance = []
+# bestValue=[]
+# bestRatio=[]
+# bestRatioPlus=[]
+# #bestRatioPlusPlus=[]
 
-for rep in range(totalReps):
+# for rep in range(totalReps):
 
+    # while True:
+    #     (s, t) = random.sample(range(1,len(graph)+1), 2)
+    #     if pathCost([s,t]) <= B:
+    #         break
+
+#     print(rep)
+#     distanceScore = []
+#     valueScore = []
+#     ratioScore = []
+#     ratioPScore = []
+#     #ratioPPScore = []
+#     distPath = bestDistancePath(s,t)
+#     for k in klist:
+#         testUsers = []
+#         testSet = random.sample(range(1,len(users)+1), k)
+#         for l in testSet:
+#             testUsers.append(users[l])
+#         testUsers = np.array([np.array(xi) for xi in testUsers])
+
+#         distanceScore.append(pathProfit(distPath,testUsers))
+#         valPath = bestValuePath(s, t, testUsers)
+#         ratPath = bestRatioPath(s, t, testUsers)
+#         ratPPath = bestRatioPlusPath(s, t, testUsers)
+        
+#         valueScore.append(pathProfit(valPath, testUsers))
+#         ratioScore.append(pathProfit(ratPath, testUsers))
+#         ratioPScore.append(pathProfit(ratPPath, testUsers))
+#         #ratioPPScore.append(bestRatioPlusPlusPath(s, t, testUsers)[1])
+
+#     if rep == 0:
+#         bestDistance = distanceScore
+#         bestValue = valueScore
+#         bestRatio = ratioScore
+#         bestRatioPlus = ratioPScore
+#         #bestRatioPlusPlus = ratioPPScore
+#     else:
+#         bestDistance = np.add(bestDistance, distanceScore)
+#         bestValue = np.add(bestValue, valueScore)
+#         bestRatio = np.add(bestRatio, ratioScore)
+#         bestRatioPlus = np.add(bestRatioPlus, ratioPScore)
+#         #bestRatioPlusPlus = np.add(bestRatioPlusPlus, ratioPPScore)
+
+# bestDistance[:] = [x/totalReps for x in bestDistance]
+# bestValue[:] = [x/totalReps for x in bestValue]
+# bestRatio[:] = [x/totalReps for x in bestRatio]
+# bestRatioPlus[:] = [x/totalReps for x in bestRatioPlus]
+# #bestRatioPlusPlus[:] = [x/totalReps for x in bestRatioPlusPlus]
+
+# plt.figure()
+# plt.plot(klist,bestDistance, marker='v', color='purple', linestyle='--')
+# plt.plot(klist,bestValue, marker='^', color='aqua', linestyle='--')
+# plt.plot(klist,bestRatio, marker='D', color='r', linestyle='--')
+# plt.plot(klist,bestRatioPlus, marker='s', color='fuchsia', linestyle='--')
+# plt.legend(['bestDistance', 'bestValue','bestRatio', 'bestRatio+'])
+# plt.xticks(range(1,21))
+# plt.xlabel('Group size')
+# plt.ylabel('Average Solution Value')
+# plt.title('Satisfaction Sum')
+# plt.tight_layout()
+# plt.show()
+
+########## K-MEANS CLUSTERING ##########
+########################################
+########################################
+def kmeans(k, testSet):
+    
+    initSet = random.sample(testSet, k) #Forgy initialization
+    centroids = [users[i] for i in initSet] 
+    clusterIds=[]
+
+    for i in range(k):
+        clusterIds.append([])
+    while True:
+        oldClusterIds = clusterIds.copy()
+        clusterIds=[]
+        for i in range(k):
+            clusterIds.append([])
+        for userId in testSet:
+            distances=[]
+            for centr in centroids:
+                distances.append(np.linalg.norm(np.subtract(centr,users[userId])))
+            clusterIds[distances.index(min(distances))].append(userId)
+        for i in range(k):
+            centroids[i]=list(np.mean([users[id] for id in clusterIds[i]],axis=0))
+        if oldClusterIds==clusterIds:
+            break
+    return clusterIds
+
+
+m=200 #Number of users
+totalScores = []
+for kaka in range(100):
+    print(kaka)
     while True:
         (s, t) = random.sample(range(1,len(graph)+1), 2)
         if pathCost([s,t]) <= B:
             break
-
-    print(rep)
-    distanceScore = []
-    valueScore = []
-    ratioScore = []
-    ratioPScore = []
-    #ratioPPScore = []
-    distPath = bestDistancePath(s,t)
-    for k in klist:
-        testUsers = []
-        testSet = random.sample(range(1,len(users)+1), k)
-        for l in testSet:
-            testUsers.append(users[l])
-        testUsers = np.array([np.array(xi) for xi in testUsers])
-
-        distanceScore.append(pathProfit(distPath,testUsers))
-        valPath = bestValuePath(s, t, testUsers)
-        ratPath = bestRatioPath(s, t, testUsers)
-        ratPPath = bestRatioPlusPath(s, t, testUsers)
-        # print("TEST")
-        # print(distPath)
-        # print(valPath)
-        valueScore.append(pathProfit(valPath, testUsers))
-        ratioScore.append(pathProfit(ratPath, testUsers))
-        ratioPScore.append(pathProfit(ratPPath, testUsers))
-        #ratioPPScore.append(bestRatioPlusPlusPath(s, t, testUsers)[1])
-
-    if rep == 0:
-        bestDistance = distanceScore
-        bestValue = valueScore
-        bestRatio = ratioScore
-        bestRatioPlus = ratioPScore
-        #bestRatioPlusPlus = ratioPPScore
-    else:
-        bestDistance = np.add(bestDistance, distanceScore)
-        bestValue = np.add(bestValue, valueScore)
-        bestRatio = np.add(bestRatio, ratioScore)
-        bestRatioPlus = np.add(bestRatioPlus, ratioPScore)
-        #bestRatioPlusPlus = np.add(bestRatioPlusPlus, ratioPPScore)
-
-bestDistance[:] = [x/totalReps for x in bestDistance]
-bestValue[:] = [x/totalReps for x in bestValue]
-bestRatio[:] = [x/totalReps for x in bestRatio]
-bestRatioPlus[:] = [x/totalReps for x in bestRatioPlus]
-#bestRatioPlusPlus[:] = [x/totalReps for x in bestRatioPlusPlus]
-
-plt.plot(klist,bestDistance, marker='v', color='purple', linestyle='--')
-plt.plot(klist,bestValue, marker='^', color='aqua', linestyle='--')
-plt.plot(klist,bestRatio, marker='D', color='r', linestyle='--')
-plt.plot(klist,bestRatioPlus, marker='s', color='fuchsia', linestyle='--')
-plt.legend(['bestDistance', 'bestValue','bestRatio', 'bestRatio+'])
-plt.xticks(range(1,21))
-plt.xlabel('Group size')
-plt.ylabel('Average Solution Value')
-plt.title('Satisfaction Min')
-plt.tight_layout()
-#plt.show()
-plt.savefig('min.png')
-########## K-MEANS CLUSTERING ##########
-########################################
-########################################
-
-# m=40    # number of users
-# k=3     # number of clusters
-# testSet = random.sample(range(1,len(users)+1), m)
-# initSet = random.sample(testSet, k) # Forgy initialization
-# centroids = [users[i] for i in initSet] 
-# clusterIds=[]
-# for i in range(k):
-#     clusterIds.append([])
-# while True:
-#     oldClusterIds = clusterIds.copy()
-#     clusterIds=[]
-#     for i in range(k):
-#         clusterIds.append([])
-#     for userId in testSet:
-#         distances=[]
-#         for centr in centroids:
-#             distances.append(np.linalg.norm(np.subtract(centr,users[userId])))
-#         clusterIds[distances.index(min(distances))].append(userId)
-#     for i in range(k):
-#         centroids[i]=list(np.mean([users[id] for id in clusterIds[i]],axis=0))
-#     if oldClusterIds==clusterIds:
-#         break
+    testSet = random.sample(range(1,len(users)+1), m)
+    kscores=[]
+    for k in [1,2,5,10,20]:
+        print(kaka,k)
+        scores = []
+        for rep in range(10):
+            clusterIds = kmeans(k,testSet)
+            totalProfit=0
+            for cluster in clusterIds:
+                testUsers=[]
+                for l in cluster:
+                    testUsers.append(users[l])
+                testUsers = np.array([np.array(xi) for xi in testUsers])
+                clusterPath = bestRatioPath(s, t, testUsers)
+                totalProfit += pathProfit(clusterPath, testUsers)
+            scores.append(totalProfit)
+        kscores.append(max(scores))
+    totalScores.append(kscores)    
