@@ -334,15 +334,28 @@ def kmeans(k, testSet):
                 distances.append(np.linalg.norm(np.subtract(centr,users[userId])))
             clusterIds[distances.index(min(distances))].append(userId)
         for i in range(k):
-            centroids[i]=list(np.mean([users[id] for id in clusterIds[i]],axis=0))
+            if clusterIds[i]==[]:
+                centroids[i]=users[random.sample(testSet,1)[0]]    #Readjust centroid of empty cluster
+            else:
+                centroids[i]=list(np.mean([users[id] for id in clusterIds[i]],axis=0))
         if oldClusterIds==clusterIds:
             break
     return clusterIds
 
+def clusterMetrics(clusterIds):
+    meanList=[]
+    varList=[]
+    for cluster in clusterIds:
+        clusterUsers=[]
+        for l in cluster:
+            clusterUsers.append(users[l])
+        meanList.append(np.mean(clusterUsers,axis=0))
+        varList.append(np.var(clusterUsers,axis=0))
+    return meanList,varList
 
-m=200 #Number of users
+m=100 #Number of users
 totalScores = []
-for kaka in range(100):
+for kaka in range(50):
     print(kaka)
     while True:
         (s, t) = random.sample(range(1,len(graph)+1), 2)
@@ -350,19 +363,29 @@ for kaka in range(100):
             break
     testSet = random.sample(range(1,len(users)+1), m)
     kscores=[]
-    for k in [1,2,5,10,20]:
+    for k in [1,2,5,10,20,50]:
         print(kaka,k)
         scores = []
-        for rep in range(10):
+        minVar=100
+        for rep in range(20):
             clusterIds = kmeans(k,testSet)
-            totalProfit=0
-            for cluster in clusterIds:
-                testUsers=[]
-                for l in cluster:
-                    testUsers.append(users[l])
-                testUsers = np.array([np.array(xi) for xi in testUsers])
-                clusterPath = bestRatioPath(s, t, testUsers)
-                totalProfit += pathProfit(clusterPath, testUsers)
-            scores.append(totalProfit)
-        kscores.append(max(scores))
+            meanList, varList = clusterMetrics(clusterIds)
+            if (np.sum(varList) < minVar):
+                minVar = np.sum(varList)
+                bestClusterIds = clusterIds
+        totalProfit=0
+        for cluster in clusterIds:
+            testUsers=[]
+            for l in cluster:
+                testUsers.append(users[l])
+            testUsers = np.array([np.array(xi) for xi in testUsers])
+            clusterPath = bestRatioPath(s, t, testUsers)
+            totalProfit += pathProfit(clusterPath, testUsers)
+
+        #scores.append(totalProfit)
+        #kscores.append(max(scores))
+        kscores.append(totalProfit)
     totalScores.append(kscores)    
+
+with open('result.dat','w') as f:
+    f.write(str(totalScores))
