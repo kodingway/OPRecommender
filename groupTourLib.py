@@ -217,14 +217,15 @@ def bestRatioPlusPlusPath(s, t, testUsers, graph, scoreFunc, stayTime, B,pois):
     while True:
         bestPath = path.copy()
         for neigh in range(1,len(graph)):
-            for neigh2 in range(1,len(graph)):
-                if (neigh!=neigh2) and (neigh not in path) and (neigh2 not in path):
-                    for nodeI in range(1,len(path)-1):
-                        potPath = path.copy()
-                        potPath[nodeI] = neigh
-                        potPath.insert(-1,neigh2)
-                        if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>pathProfit(bestPath,testUsers,scoreFunc,pois)/pathCost(bestPath,stayTime,graph)) and (pathProfit(potPath,testUsers,scoreFunc,pois)>pathProfit(bestPath,testUsers,scoreFunc,pois)) and (pathCost(potPath,stayTime,graph) <= B):
-                            bestPath = potPath.copy()
+            if neigh not in path:
+                for neigh2 in range(1,len(graph)):
+                    if (neigh!=neigh2) and (neigh2 not in path):
+                        for nodeI in range(1,len(path)-1):
+                            potPath = path.copy()
+                            potPath[nodeI] = neigh
+                            potPath.insert(-1,neigh2)
+                            if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>pathProfit(bestPath,testUsers,scoreFunc,pois)/pathCost(bestPath,stayTime,graph)) and (pathProfit(potPath,testUsers,scoreFunc,pois)>pathProfit(bestPath,testUsers,scoreFunc,pois)) and (pathCost(potPath,stayTime,graph) <= B):
+                                bestPath = potPath.copy()
         if bestPath == path:
             return path
         path = bestPath.copy()
