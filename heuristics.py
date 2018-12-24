@@ -3,6 +3,7 @@ import numpy as np
 import random
 import math
 import matplotlib.pyplot as plt
+from joblib import Parallel, delayed
 
 city = "Rome"
 graph = readGraph(city)
@@ -10,22 +11,7 @@ users = readUsers(city)
 pois = readPOIs(city,len(graph))
 stayTime = readStayTimes(city,len(graph))
 
-########## HEURISTICS SIMULATION & COMPARISON ##########
-########################################################
-########################################################
-scoreFunc = satisfactionSum
-totalReps = 100
-B = 420  # Budget (minutes)
-klist=[1,2,5,10,20]
-
-totalDistanceScore = []
-totalValueScore=[]
-totalRatioScore=[]
-totalRatioPScore=[]
-# totalRatioPPScore=[]
-
-for rep in range(totalReps):
-
+def heuristicsRep(rep):
     while True:
         (s, t) = random.sample(range(1,len(graph)), 2)
         if pathCost([s,t],stayTime,graph) <= B:
@@ -35,14 +21,14 @@ for rep in range(totalReps):
     distanceScore = []
     valueScore = []
     ratioScore = []
-    ratioPScore = []
+    # ratioPScore = []
     # ratioPPScore = []
 
     # print("Best distance")
     distPath = bestDistancePath(s,t,graph,stayTime,B)
     
     for k in klist:
-        print(rep,k)
+        #print(rep,k)
         testUsers = []
         testSet = random.sample(range(1,len(users)+1), k)
         for l in testSet:
@@ -64,11 +50,23 @@ for rep in range(totalReps):
         # ratioPScore.append(pathProfit(ratPPath, testUsers, scoreFunc,pois))
         # ratioPPScore.append(pathProfit(ratPPPath,testUsers,scoreFunc,pois))
 
-    totalDistanceScore.append(distanceScore)
-    totalValueScore.append(valueScore)
-    totalRatioScore.append(ratioScore)
-    # totalRatioPScore.append(ratioPScore)
-    # totalRatioPPScore.append(ratioPPScore)
+    return (distanceScore,valueScore,ratioScore)
+
+########## HEURISTICS SIMULATION & COMPARISON ##########
+########################################################
+########################################################
+scoreFunc = satisfactionSum
+totalReps = 100
+B = 420  # Budget (minutes)
+klist=[1,2,5,10,20]
+
+totalDistanceScore = []
+totalValueScore=[]
+totalRatioScore=[]
+totalRatioPScore=[]
+# totalRatioPPScore=[]
+
+results = Parallel(n_jobs=4)(delayed(heuristicsRep)(rep) for rep in range(totalReps))
 
 bestDistance = np.mean(totalDistanceScore,axis=0)
 bestValue = np.mean(totalValueScore, axis=0)
@@ -77,9 +75,9 @@ bestRatio = np.mean(totalRatioScore, axis=0)
 # bestRatioPlusPlus = np.mean(totalRatioPPScore, axis=0)
 
 with open('heuristics.dat','w') as f:
-    f.write(bestDistance)
-    f.write(bestValue)
-    f.write(bestRatio)
+    f.write(str(bestDistance))
+    f.write(str(bestValue))
+    f.write(str(bestRatio))
     # f.write(bestRatioPlus)
     # f.write(bestRatioPlusPlus)
 
