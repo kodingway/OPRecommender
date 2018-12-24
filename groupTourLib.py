@@ -92,18 +92,18 @@ def bestValuePath(s, t, testUsers, graph, scoreFunc, stayTime, B, pois):
 
     path=[s,t]
     while True:
-        bestPath = path.copy()
+        bestPath = path[:]
         bestValue = 0
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path.copy()
+                potPath = path[:]
                 potPath.insert(-1,neigh)
                 if (pathProfit(potPath,testUsers,scoreFunc,pois)>bestValue) and (pathCost(potPath,stayTime,graph) <= B):
-                    bestPath = potPath.copy()
+                    bestPath = potPath[:]
                     bestValue = pathProfit(bestPath,testUsers,scoreFunc,pois)
         if bestPath == path:
             return path
-        path = bestPath.copy()
+        path = bestPath[:]
 
 ########## BEST DISTANCE HEURISTIC ##########
 #############################################
@@ -113,18 +113,18 @@ def bestDistancePath(s, t, graph, stayTime, B):
     path=[s,t]
     while True:
         closestDistance=float("inf")
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
                 if (graph[path[-2],neigh]+stayTime[neigh]<closestDistance):
-                    potPath=path.copy()
+                    potPath=path[:]
                     potPath.insert(-1,neigh)
                     if (pathCost(potPath,stayTime,graph)<=B):
                         closestDistance=graph[path[-2],neigh]+stayTime[neigh]
-                        bestPath = potPath.copy()
+                        bestPath = potPath[:]
         if bestPath == path:
             return path
-        path = bestPath.copy()
+        path = bestPath[:]
 
 ########## BEST RATIO HEURISTIC ##########
 ##########################################
@@ -134,17 +134,17 @@ def bestRatioPath(s, t, testUsers, graph, scoreFunc, stayTime, B, pois):
     path=[s,t]
     while True:
         bestRatio=0
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path.copy()
+                potPath = path[:]
                 potPath.insert(-1,neigh)
                 if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>bestRatio) and (pathCost(potPath,stayTime,graph) <= B):
-                    bestPath = potPath.copy()
+                    bestPath = potPath[:]
                     bestRatio = pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)
         if bestPath == path:
             return path
-        path = bestPath.copy()
+        path = bestPath[:]
 
 
 ########## BEST RATIO+ HEURISTIC ##########
@@ -155,30 +155,30 @@ def bestRatioPlusPath(s, t, testUsers, graph, scoreFunc, stayTime, B,pois):
     path=[s,t]
     while True:
         bestRatio=0
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path.copy()
+                potPath = path[:]
                 potPath.insert(-1,neigh)
                 if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>bestRatio) and (pathCost(potPath,stayTime,graph) <= B):
-                    bestPath = potPath.copy()
+                    bestPath = potPath[:]
                     bestRatio = pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)
         if bestPath == path:
             break
-        path = bestPath.copy()
+        path = bestPath[:]
 
     while True:
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
                 for nodeI in range(1,len(path)-1):
-                    potPath = path.copy()
+                    potPath = path[:]
                     potPath[nodeI] = neigh
                     if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>pathProfit(bestPath,testUsers,scoreFunc,pois)/pathCost(bestPath,stayTime,graph)) and (pathProfit(potPath,testUsers,scoreFunc,pois)>pathProfit(bestPath,testUsers,scoreFunc,pois)) and (pathCost(potPath,stayTime,graph) <= B):
-                        bestPath = potPath.copy()
+                        bestPath = potPath[:]
         if bestPath == path:
             return path
-        path = bestPath.copy()
+        path = bestPath[:]
 
 
 ########## BEST RATIO++ HEURISTIC ##########
@@ -189,43 +189,43 @@ def bestRatioPlusPlusPath(s, t, testUsers, graph, scoreFunc, stayTime, B,pois):
     path=[s,t]
     while True:
         bestRatio=0
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path.copy()
+                potPath = path[:]
                 potPath.insert(-1,neigh)
                 if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>bestRatio) and (pathCost(potPath,stayTime,graph) <= B):
-                    bestPath = potPath.copy()
+                    bestPath = potPath[:]
                     bestRatio = pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)
         if bestPath == path:
             break
-        path = bestPath.copy()
+        path = bestPath[:]
 
     while True:
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
                 for nodeI in range(1,len(path)-1):
-                    potPath = path.copy()
+                    potPath = path[:]
                     potPath[nodeI] = neigh
                     if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>pathProfit(bestPath,testUsers,scoreFunc,pois)/pathCost(bestPath,stayTime,graph)) and (pathProfit(potPath,testUsers,scoreFunc,pois)>pathProfit(bestPath,testUsers,scoreFunc,pois)) and (pathCost(potPath,stayTime,graph) <= B):
-                        bestPath = potPath.copy()
+                        bestPath = potPath[:]
         if bestPath == path:
             break
-        path = bestPath.copy()
+        path = bestPath[:]
 
     while True:
-        bestPath = path.copy()
+        bestPath = path[:]
         for neigh in range(1,len(graph)):
             if neigh not in path:
                 for neigh2 in range(1,len(graph)):
                     if (neigh!=neigh2) and (neigh2 not in path):
                         for nodeI in range(1,len(path)-1):
-                            potPath = path.copy()
+                            potPath = path[:]
                             potPath[nodeI] = neigh
                             potPath.insert(-1,neigh2)
                             if (pathProfit(potPath,testUsers,scoreFunc,pois)/pathCost(potPath,stayTime,graph)>pathProfit(bestPath,testUsers,scoreFunc,pois)/pathCost(bestPath,stayTime,graph)) and (pathProfit(potPath,testUsers,scoreFunc,pois)>pathProfit(bestPath,testUsers,scoreFunc,pois)) and (pathCost(potPath,stayTime,graph) <= B):
-                                bestPath = potPath.copy()
+                                bestPath = potPath[:]
         if bestPath == path:
             return path
-        path = bestPath.copy()
+        path = bestPath[:]
