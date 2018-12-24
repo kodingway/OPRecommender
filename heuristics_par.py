@@ -12,12 +12,16 @@ pois = readPOIs(city,len(graph))
 stayTime = readStayTimes(city,len(graph))
 
 def heuristicsRep(rep):
+    
+    with open('log.txt','a') as f:
+        f.write(str(rep)+'\n')
+    
     while True:
         (s, t) = random.sample(range(1,len(graph)), 2)
         if pathCost([s,t],stayTime,graph) <= B:
             break
 
-    print(rep)
+    #print(rep)
     distanceScore = []
     valueScore = []
     ratioScore = []
@@ -56,7 +60,7 @@ def heuristicsRep(rep):
 ########################################################
 ########################################################
 scoreFunc = satisfactionSum
-totalReps = 100
+totalReps = 500
 B = 420  # Budget (minutes)
 klist=[1,2,5,10,20]
 
@@ -66,7 +70,10 @@ totalRatioScore=[]
 totalRatioPScore=[]
 # totalRatioPPScore=[]
 
-results = Parallel(n_jobs=4)(delayed(heuristicsRep)(rep) for rep in range(totalReps))
+results  = Parallel(n_jobs=15)(delayed(heuristicsRep)(rep) for rep in range(totalReps))
+totalDistanceScore = [res[0] for res in results]
+totalValueScore = [res[1] for res in results]
+totalRatioScore = [res[2] for res in results]
 
 bestDistance = np.mean(totalDistanceScore,axis=0)
 bestValue = np.mean(totalValueScore, axis=0)
@@ -88,7 +95,7 @@ plt.plot(klist,bestRatio, marker='D', color='r', linestyle='--')
 # plt.plot(klist,bestRatioPlus, marker='s', color='fuchsia', linestyle='--')
 # plt.plot(klist,bestRatioPlusPlus, marker='o', color='darkblue', linestyle='--')
 plt.legend(['bestDistance', 'bestValue','bestRatio'])
-plt.xticks(range(1,21))
+plt.xticks(klist)
 plt.xlabel('Group size')
 plt.ylabel('Average Solution Value')
 plt.title('Satisfaction Sum')
