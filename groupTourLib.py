@@ -87,7 +87,6 @@ def pathProfit(path,testUsers, scoreFunc,pois):
 
 ########## BEST VALUE HEURISTIC ##########
 ##########################################
-##########################################
 def bestValuePath(s, t, testUsers, graph, scoreFunc, stayTime, B, pois):
 
     path=[s,t]
@@ -106,7 +105,6 @@ def bestValuePath(s, t, testUsers, graph, scoreFunc, stayTime, B, pois):
         path = bestPath[:]
 
 ########## BEST DISTANCE HEURISTIC ##########
-#############################################
 #############################################
 def bestDistancePath(s, t, graph, stayTime, B):
 
@@ -127,7 +125,6 @@ def bestDistancePath(s, t, graph, stayTime, B):
         path = bestPath[:]
 
 ########## BEST RATIO HEURISTIC ##########
-##########################################
 ##########################################
 def bestRatioPath(s, t, testUsers, graph, scoreFunc, stayTime, B, pois):
 
@@ -154,7 +151,6 @@ def bestRatioPath(s, t, testUsers, graph, scoreFunc, stayTime, B, pois):
 
 
 ########## BEST RATIO+ HEURISTIC ##########
-###########################################
 ###########################################
 def bestRatioPlusPath(s, t, testUsers, graph, scoreFunc, stayTime, B,pois):
 
@@ -202,7 +198,6 @@ def bestRatioPlusPath(s, t, testUsers, graph, scoreFunc, stayTime, B,pois):
 
 
 ########## BEST RATIO++ HEURISTIC ##########
-############################################
 ############################################
 def bestRatioPlusPlusPath(s, t, testUsers, graph, scoreFunc, stayTime, B,pois):
 
