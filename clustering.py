@@ -1,6 +1,10 @@
 import random
 import numpy as np
 from groupTourLib import *
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
+import sys
+from joblib import Parallel, delayed
 
 city = "Rome"
 graph = readGraph(city)
@@ -70,31 +74,68 @@ def clusterMetrics(clusterIds,users):
 m=100 #Number of users
 totalScores = []
 B=420
-scoreFunc = satisfactionSum
-totalReps=50
+scoring = 'sum'
+totalReps=10
+########## VISUALIZATION ##########
+# pca = PCA(n_components=2).fit(list(pois.values()))
+###################################
 
-for rep in range(totalReps):
-    print(rep)
+def clusteringRep(rep):
+    with open('log.txt','a') as f:
+        f.write(str(rep)+'\n')
+    
     while True:
         (s, t) = random.sample(range(1,len(graph)), 2)
         if pathCost([s,t],stayTime,graph) <= B:
             break
+    
     testSet = random.sample(range(1,len(users)+1), m)
     kscores=[]
     for k in [1,2,5,10,20]:
-        print(rep,k)
+        # print(rep,k)
         clusterIds = kmeans(k,testSet,users,init='kmeans++')
         meanList, varList = clusterMetrics(clusterIds,users)
-        totalProfit=0
-        for cluster in clusterIds:
+        # print(np.sum(varList,axis=1))
+        ########## VISUALIZATION ##########
+        # reduced_data = pca.transform(list(pois.values()))
+        # plt.figure()
+        # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10)
+        # reduced_data = pca.transform([pois[s],pois[t]])
+        # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='P')
+        # for ind,cluster in enumerate(clusterIds):
+        #     reduced_data = pca.transform([users[clusterId] for clusterId in cluster])
+        #     plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10,marker='D')
+        #     reduced_data = pca.transform([meanList[ind]])
+        #     plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='x',c='k')
+        #     plt.show()
+        ###################################
+        clusterProfits=[]
+        # plt.figure()
+        for ind,cluster in enumerate(clusterIds):
+            # reduced_data = pca.transform(list(pois.values()))
+            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10)
+            # reduced_data = pca.transform([users[clusterId] for clusterId in cluster])
+            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10,marker='D')
             testUsers=[]
             for l in cluster:
                 testUsers.append(users[l])
-            testUsers = np.array([np.array(xi) for xi in testUsers])
-            clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoreFunc,stayTime,B,pois)
-            totalProfit += pathProfit(clusterPath, testUsers, scoreFunc, pois)
-        kscores.append(totalProfit)
-    totalScores.append(kscores)
+            testUsers = np.array([np.array(x) for x in testUsers])
+            clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoring,stayTime,B,pois)
+            # reduced_data = pca.transform([pois[poiId] for poiId in clusterPath])
+            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='P')
+            # plt.show()
+            print(pathProfit(clusterPath, testUsers, scoring, pois)/len(testUsers))
+            clusterProfits.append(pathProfit(clusterPath, testUsers, scoring, pois))
+            # plt.clf()
+        kscores.append(sum(clusterProfits))
+    return kscores
+
+numOfCores=int(sys.argv[1])
+if numOfCores==1:
+    for rep in range(totalReps):
+        totalScores.append(clusteringRep(rep))
+else:
+    totalScores = Parallel(n_jobs=numOfCores)(delayed(clusteringRep)(rep) for rep in range(totalReps))
 
 with open('result.dat','w') as f:
     f.write(str(totalScores))
