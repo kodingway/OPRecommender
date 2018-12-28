@@ -140,21 +140,25 @@ def bestRatioPath(s, t, testUsers, graph, scoring, stayTime, B, pois):
 
     path=[s,t]
     while True:
-        changedPath = False
-        bestPath = path[:]
-        bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
-        bestCost=pathCost(bestPath,stayTime,graph)
+        notInPath = []
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path[:]
-                potPath.insert(-1,neigh)
-                potProfit=pathProfit(potPath,testUsers,scoring,pois)
-                potCost=pathCost(potPath,stayTime,graph)
-                if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
-                    changedPath=True
-                    bestPath = potPath[:]
-                    bestProfit=potProfit
-                    bestCost=potCost
+                notInPath.append(neigh)
+        changedPath = False
+        bestPath = path[:]
+        bestProfit=0
+        # bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
+        bestCost=pathCost(bestPath,stayTime,graph)
+        for neigh in notInPath:
+            potPath = path[:]
+            potPath.insert(-1,neigh)
+            potProfit=pathProfit(potPath,testUsers,scoring,pois)
+            potCost=pathCost(potPath,stayTime,graph)
+            if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
+                changedPath=True
+                bestPath = potPath[:]
+                bestProfit=potProfit
+                bestCost=potCost
         if changedPath==False:
             return path
         path = bestPath[:]
@@ -166,42 +170,38 @@ def bestRatioPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
 
     path=[s,t]
     while True:
-        changedPath=False
-        bestPath = path[:]
-        bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
-        bestCost=pathCost(bestPath,stayTime,graph)
+        notInPath = []
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path[:]
-                potPath.insert(-1,neigh)
-                potProfit = pathProfit(potPath,testUsers,scoring,pois)
-                potCost = pathCost(potPath,stayTime,graph)
-                if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
-                    changedPath=True
-                    bestPath = potPath[:]
-                    bestProfit=potProfit
-                    bestCost=potCost
+                notInPath.append(neigh)
+        changedPath=False
+        bestPath = path[:]
+        bestProfit=0
+        bestCost=pathCost(bestPath,stayTime,graph)
+        for neigh in notInPath:
+            potPath = path[:]
+            potPath.insert(-1,neigh)
+            potProfit = pathProfit(potPath,testUsers,scoring,pois)
+            potCost = pathCost(potPath,stayTime,graph)
+            if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
+                changedPath=True
+                bestPath = potPath[:]
+                bestProfit=potProfit
+                bestCost=potCost
         if changedPath==False:
-            break
-        path = bestPath[:]
-
-    while True:
-        changedPath=False
-        bestPath = path[:]
-        bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
-        bestCost=pathCost(bestPath,stayTime,graph)
-        for neigh in range(1,len(graph)):
-            if neigh not in path:
+            bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
+            bestCost=pathCost(bestPath,stayTime,graph)
+            for neigh in notInPath:
                 for nodeI in range(1,len(path)-1):
                     potPath = path[:]
                     potPath[nodeI] = neigh
                     potProfit=pathProfit(potPath,testUsers,scoring,pois)                   
                     potCost=pathCost(potPath,stayTime,graph)
-                    if (potProfit/potCost>bestProfit/bestCost) and (potProfit>bestProfit) and (potCost <= B):
+                    if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
                         changedPath=True
                         bestPath = potPath[:]
                         bestProfit=potProfit
-                        bestCost=potCost       
+                        bestCost=potCost   
         if changedPath==False:
             return path
         path = bestPath[:]
@@ -213,57 +213,44 @@ def bestRatioPlusPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
 
     path=[s,t]
     while True:
-        changedPath=False
-        bestPath = path[:]
-        bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
-        bestCost=pathCost(bestPath,stayTime,graph)
+        notInPath = []
         for neigh in range(1,len(graph)):
             if neigh not in path:
-                potPath = path[:]
-                potPath.insert(-1,neigh)
-                potProfit=pathProfit(potPath,testUsers,scoring,pois)                   
-                potCost=pathCost(potPath,stayTime,graph)
-                if (potProfit/potCost>bestProfit/bestCost) and (potProfit>bestProfit) and (potCost <= B):
-                    changedPath=True
-                    bestPath = potPath[:]
-                    bestProfit=potProfit
-                    bestCost=potCost
+                notInPath.append(neigh)
+        changedPath=False
+        bestPath = path[:]
+        bestProfit=0
+        bestCost=pathCost(bestPath,stayTime,graph)
+        for neigh in notInPath:
+            potPath = path[:]
+            potPath.insert(-1,neigh)
+            potProfit = pathProfit(potPath,testUsers,scoring,pois)
+            potCost = pathCost(potPath,stayTime,graph)
+            if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
+                changedPath=True
+                bestPath = potPath[:]
+                bestProfit=potProfit
+                bestCost=potCost
         if changedPath==False:
-            break
-        path = bestPath[:]
-
-    while True:
-        changedPath=False
-        bestPath = path[:]
-        bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
-        bestCost=pathCost(bestPath,stayTime,graph)
-        for neigh in range(1,len(graph)):
-            if neigh not in path:
+            bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
+            bestCost=pathCost(bestPath,stayTime,graph)
+            for neigh in notInPath:
                 for nodeI in range(1,len(path)-1):
                     potPath = path[:]
                     potPath[nodeI] = neigh
                     potProfit=pathProfit(potPath,testUsers,scoring,pois)                   
                     potCost=pathCost(potPath,stayTime,graph)
-                    if (pathProfit(potPath,testUsers,scoring,pois)/pathCost(potPath,stayTime,graph)>pathProfit(bestPath,testUsers,scoring,pois)/pathCost(bestPath,stayTime,graph)) and (pathProfit(potPath,testUsers,scoring,pois)>pathProfit(bestPath,testUsers,scoring,pois)) and (pathCost(potPath,stayTime,graph) <= B):
+                    if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
                         changedPath=True
                         bestPath = potPath[:]
                         bestProfit=potProfit
-                        bestCost=potCost
+                        bestCost=potCost   
         if changedPath==False:
-            break
-        path = bestPath[:]
-
-    while True:
-        changedPath=False
-        bestPath = path[:]
-        bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
-        bestCost=pathCost(bestPath,stayTime,graph)
-        notInPath = []
-        for neigh in range(1,len(graph)):
-            if neigh not in path:
-                notInPath.append(neigh)
-        for neigh in notInPath:
+            bestProfit=pathProfit(bestPath,testUsers,scoring,pois)
+            bestCost=pathCost(bestPath,stayTime,graph)
+            for neigh in notInPath:
                 for neigh2 in notInPath:
+                    print(neigh,neigh2)
                     if (neigh!=neigh2):
                         for nodeI in range(1,len(path)-1):
                             potPath = path[:]
@@ -275,7 +262,7 @@ def bestRatioPlusPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
                                 changedPath=True
                                 bestPath = potPath[:]
                                 bestProfit=potProfit
-                                bestCost=potCost
+                                bestCost=potCost    
         if changedPath==False:
             return path
         path = bestPath[:]
