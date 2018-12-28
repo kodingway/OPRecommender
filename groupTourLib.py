@@ -32,6 +32,10 @@ def readUsers(city):
             users[userId]=list(map(float,row[:8]))
             userId += 1
     
+    ########## NORMALIZATION ##########
+    for userId in users:
+        users[userId]/=np.linalg.norm(users[userId])
+
     return users
 
 def readPOIs(city,graphSize):
@@ -45,6 +49,10 @@ def readPOIs(city,graphSize):
     for key in range(1,graphSize):
         if key not in list(pois.keys()):
             pois[key]=pois[1]  #some pois don't have vectors
+
+    ########## NORMALIZATION ##########
+    for poiId in pois:
+        pois[poiId]/=np.linalg.norm(pois[poiId])
 
     return pois
 

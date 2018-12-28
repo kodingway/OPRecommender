@@ -119,12 +119,11 @@ def clusteringRep(rep):
             testUsers=[]
             for l in cluster:
                 testUsers.append(users[l])
-            testUsers = np.array([np.array(x) for x in testUsers])
             clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoring,stayTime,B,pois)
             # reduced_data = pca.transform([pois[poiId] for poiId in clusterPath])
             # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='P')
             # plt.show()
-            print(pathProfit(clusterPath, testUsers, scoring, pois)/len(testUsers))
+            # print(pathProfit(clusterPath, testUsers, scoring, pois)/len(testUsers))
             clusterProfits.append(pathProfit(clusterPath, testUsers, scoring, pois))
             # plt.clf()
         kscores.append(sum(clusterProfits))
