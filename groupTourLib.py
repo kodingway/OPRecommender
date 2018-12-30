@@ -33,8 +33,8 @@ def readUsers(city):
             userId += 1
     
     ########## NORMALIZATION ##########
-    for userId in users:
-        users[userId]/=np.linalg.norm(users[userId])
+    # for userId in users:
+        # users[userId]/=np.linalg.norm(users[userId])
 
     return users
 
@@ -51,8 +51,8 @@ def readPOIs(city,graphSize):
             pois[key]=pois[1]  #some pois don't have vectors
 
     ########## NORMALIZATION ##########
-    for poiId in pois:
-        pois[poiId]/=np.linalg.norm(pois[poiId])
+    # for poiId in pois:
+        # pois[poiId]/=np.linalg.norm(pois[poiId])
 
     return pois
 
@@ -95,6 +95,7 @@ def pathProfit(path,testUsers,scoring,pois):
         result=np.sum(result,axis=0)
         result=np.mean(result)-0.5*np.std(result)
     return(result)
+
 ########## BEST VALUE HEURISTIC ##########
 ##########################################
 def bestValuePath(s, t, testUsers, graph, scoring, stayTime, B, pois):
@@ -103,7 +104,7 @@ def bestValuePath(s, t, testUsers, graph, scoring, stayTime, B, pois):
     while True:
         bestPath = path[:]
         bestValue = 0
-        for neigh in range(1,len(graph)):
+        for neigh in pois:
             if neigh not in path:
                 potPath = path[:]
                 potPath.insert(-1,neigh)
@@ -116,13 +117,13 @@ def bestValuePath(s, t, testUsers, graph, scoring, stayTime, B, pois):
 
 ########## BEST DISTANCE HEURISTIC ##########
 #############################################
-def bestDistancePath(s, t, graph, stayTime, B):
+def bestDistancePath(s, t, graph, stayTime, B, pois):
 
     path=[s,t]
     while True:
         closestDistance=float("inf")
         bestPath = path[:]
-        for neigh in range(1,len(graph)):
+        for neigh in pois:
             if neigh not in path:
                 if (graph[path[-2],neigh]+stayTime[neigh]<closestDistance):
                     potPath=path[:]
@@ -141,7 +142,7 @@ def bestRatioPath(s, t, testUsers, graph, scoring, stayTime, B, pois):
     path=[s,t]
     while True:
         notInPath = []
-        for neigh in range(1,len(graph)):
+        for neigh in pois:
             if neigh not in path:
                 notInPath.append(neigh)
         changedPath = False
@@ -171,7 +172,7 @@ def bestRatioPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
     path=[s,t]
     while True:
         notInPath = []
-        for neigh in range(1,len(graph)):
+        for neigh in pois:
             if neigh not in path:
                 notInPath.append(neigh)
         changedPath=False
@@ -214,7 +215,7 @@ def bestRatioPlusPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
     path=[s,t]
     while True:
         notInPath = []
-        for neigh in range(1,len(graph)):
+        for neigh in pois:
             if neigh not in path:
                 notInPath.append(neigh)
         changedPath=False

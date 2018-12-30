@@ -49,7 +49,7 @@ plt.savefig('Plots/Dataset/preferenceDist_Rome.png')
 
 ########## USERS & POIS - PCA & VISUALIZATION ##########
 ########################################################
-pca = PCA(n_components=2).fit(list(users.values()))
+pca = PCA(n_components=2).fit(list(pois.values()))
 reduced_data = pca.transform(list(pois.values()))
 plt.figure()
 plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10)

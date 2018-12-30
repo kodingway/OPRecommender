@@ -29,7 +29,7 @@ def heuristicsRep(rep):
     ratioPScore = []
     # ratioPPScore = []
 
-    distPath = bestDistancePath(s,t,graph,stayTime,B)
+    distPath = bestDistancePath(s,t,graph,stayTime,B,pois)
     
     for k in klist:
         #print(rep,k)
@@ -72,7 +72,7 @@ if numOfCores==1:
     for rep in range(totalReps):
         results.append(heuristicsRep(rep))
 else:
-    results = Parallel(n_jobs=15)(delayed(heuristicsRep)(rep) for rep in range(totalReps))
+    results = Parallel(n_jobs=numOfCores)(delayed(heuristicsRep)(rep) for rep in range(totalReps))
 
 totalDistanceScore = [res[0] for res in results]
 totalValueScore = [res[1] for res in results]

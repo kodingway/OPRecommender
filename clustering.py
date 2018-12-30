@@ -14,14 +14,14 @@ stayTime = readStayTimes(city,len(graph))
 
 ########## K-MEANS CLUSTERING ##########
 ########################################
-def kmeans(k, testSet, users, init='random'):
+def kmeans(k, testSet, pointsDic, init='random'):
     
     if init=='random':
         initSet = random.sample(testSet, k) #Forgy initialization
-        centroids = [users[i] for i in initSet]
+        centroids = [pointsDic[i] for i in initSet]
     elif init=='kmeans++':
         centroids=[]
-        centroids.append(users[random.sample(testSet,1)[0]])
+        centroids.append(pointsDic[random.sample(testSet,1)[0]])
         while len(centroids)<k:
             probab=[]
             for userId in testSet:
@@ -36,7 +36,7 @@ def kmeans(k, testSet, users, init='random'):
                 if randNum<p:
                     ind=i
                     break
-            centroids.append(users[testSet[ind]])
+            centroids.append(pointsDic[testSet[ind]])
     clusterIds=[]
 
     for i in range(k):
@@ -70,14 +70,15 @@ def clusterMetrics(clusterIds,users):
         meanList.append(np.mean(clusterUsers,axis=0))
         varList.append(np.var(clusterUsers,axis=0))
     return meanList,varList
-
+    
 m=100 #Number of users
 totalScores = []
 B=420
 scoring = 'sum'
 totalReps=10
+klist=[1,2,3,4,5,10,20,50]
 ########## VISUALIZATION ##########
-# pca = PCA(n_components=2).fit(list(pois.values()))
+# pca = PCA(n_components=2).fit(list(users.values()))
 ###################################
 
 def clusteringRep(rep):
@@ -91,7 +92,7 @@ def clusteringRep(rep):
     
     testSet = random.sample(range(1,len(users)+1), m)
     kscores=[]
-    for k in [1,2,5,10,20]:
+    for k in klist:
         # print(rep,k)
         clusterIds = kmeans(k,testSet,users,init='kmeans++')
         meanList, varList = clusterMetrics(clusterIds,users)
@@ -122,8 +123,9 @@ def clusteringRep(rep):
             clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoring,stayTime,B,pois)
             # reduced_data = pca.transform([pois[poiId] for poiId in clusterPath])
             # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='P')
+            # for ind,dat in enumerate(reduced_data):
+            #     plt.text(dat[0],dat[1],str(ind),color='k',fontsize=10)
             # plt.show()
-            # print(pathProfit(clusterPath, testUsers, scoring, pois)/len(testUsers))
             clusterProfits.append(pathProfit(clusterPath, testUsers, scoring, pois))
             # plt.clf()
         kscores.append(sum(clusterProfits))
@@ -136,5 +138,16 @@ if numOfCores==1:
 else:
     totalScores = Parallel(n_jobs=numOfCores)(delayed(clusteringRep)(rep) for rep in range(totalReps))
 
-with open('result.dat','w') as f:
+with open('clustering.dat','w') as f:
     f.write(str(totalScores))
+
+totalScores=np.mean(totalScores,axis=0)
+
+plt.figure()
+plt.plot(klist,totalScores, marker='D', linestyle='--')
+plt.xticks(klist)
+plt.xlabel('Number of clusters')
+plt.ylabel('Average solution value')
+plt.title('Overall Group Satisfaction')
+plt.tight_layout()
+plt.savefig('heuristics.png')
