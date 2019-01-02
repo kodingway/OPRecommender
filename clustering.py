@@ -5,71 +5,13 @@ from sklearn.decomposition import PCA
 import matplotlib.pyplot as plt
 import sys
 from joblib import Parallel, delayed
+from clusteringLib import *
 
 city = "Rome"
 graph = readGraph(city)
 users = readUsers(city)
 pois = readPOIs(city,len(graph))
 stayTime = readStayTimes(city,len(graph))
-
-########## K-MEANS CLUSTERING ##########
-########################################
-def kmeans(k, testSet, pointsDic, init='random'):
-    
-    if init=='random':
-        initSet = random.sample(testSet, k) #Forgy initialization
-        centroids = [pointsDic[i] for i in initSet]
-    elif init=='kmeans++':
-        centroids=[]
-        centroids.append(pointsDic[random.sample(testSet,1)[0]])
-        while len(centroids)<k:
-            probab=[]
-            for userId in testSet:
-                userProximity=[]
-                for centr in centroids:
-                    userProximity.append(np.linalg.norm(np.subtract(centr,users[userId])))
-                probab.append(min(userProximity))
-            probab=[x/sum(probab) for x in probab]
-            probab=np.cumsum(probab)
-            randNum = random.random()
-            for i,p in enumerate(probab):
-                if randNum<p:
-                    ind=i
-                    break
-            centroids.append(pointsDic[testSet[ind]])
-    clusterIds=[]
-
-    for i in range(k):
-        clusterIds.append([])
-    while True:
-        oldClusterIds = clusterIds.copy()
-        clusterIds=[]
-        for i in range(k):
-            clusterIds.append([])
-        for userId in testSet:
-            distances=[]
-            for centr in centroids:
-                distances.append(np.linalg.norm(np.subtract(centr,users[userId])))
-            clusterIds[distances.index(min(distances))].append(userId)
-        for i in range(k):
-            if clusterIds[i]==[]:
-                centroids[i]=users[random.sample(testSet,1)[0]]    #Readjust centroid of empty cluster
-            else:
-                centroids[i]=list(np.mean([users[id] for id in clusterIds[i]],axis=0))
-        if oldClusterIds==clusterIds:
-            break
-    return clusterIds
-
-def clusterMetrics(clusterIds,users):
-    meanList=[]
-    varList=[]
-    for cluster in clusterIds:
-        clusterUsers=[]
-        for l in cluster:
-            clusterUsers.append(users[l])
-        meanList.append(np.mean(clusterUsers,axis=0))
-        varList.append(np.var(clusterUsers,axis=0))
-    return meanList,varList
     
 m=100 #Number of users
 totalScores = []
