@@ -1,2 +1,3 @@
-# groupTourClustering
-Clustering for the group orienteering problem
+# groupOrienteering
+
+Python code used in diploma thesis "Cluster analysis for the group orienteering problem".
