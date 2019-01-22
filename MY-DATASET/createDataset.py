@@ -10,7 +10,7 @@ import flickrapi
 import time
 import datetime
 
-centerName='Omonoia, Athens'
+centerName='Athens'
 page=wikipedia.page(centerName)
 centerLat=float(page.coordinates[0])
 centerLon=float(page.coordinates[1])
@@ -19,16 +19,16 @@ api_key='8d1a7267a8e07b28c8997b8bf7ccabe8'
 api_secret='66a3513acdb609b2'
 
 flickr = flickrapi.FlickrAPI(api_key, api_secret, format='parsed-json')
-photos = flickr.photos.search(min_taken_date='2017-01-01',accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
+photos = flickr.photos.search(min_taken_date='2018-12-01',accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
 numOfPages = photos['photos']['pages']
 
 #GETTING ALL PHOTOS
 photoDict=[]
 
 for page in range(1,numOfPages+1):
-    print(page)
+    #print(page)
     try:
-        photos = flickr.photos.search(min_taken_date='2017-01-01', page=page,accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
+        photos = flickr.photos.search(min_taken_date='2018-12-01', page=page,accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
         for photo in photos['photos']['photo']:
                 photoDict.append(photo)
     except:
@@ -38,12 +38,10 @@ pois={}
 rawTexts={}
 poiTitleToId={}
 users={}
-
+print(len(photoDict))
 myId=1
 for ind,photo in enumerate(photoDict):
     print(ind)
-    if ind==20:
-        break
     try:
         info = flickr.photos.getInfo(api_key=api_key,photo_id=photo['id'])
         owner=info['photo']['owner']['nsid']
@@ -70,6 +68,10 @@ for ind,photo in enumerate(photoDict):
             users[owner].append((poiId,timeStamp))
     except:
         continue
+
+for rawId in rawTexts:
+    with open(str(rawId)+'.txt','w') as f:
+        f.write(str(rawTexts[rawId])+'\n')
 
 with open('dictionary.txt','w') as f:
     for title in poiTitleToId:
@@ -106,23 +108,30 @@ with open('Distances.txt','w') as f:
             f.write(str(poiI)+' '+str(poiJ)+' '+str(R*c)+'\n')
 
 stayTimes={}
-for userId in users:
-    oldId=users[userId][0][0]
-    newId=0
-    timeSpent=0
-    oldTime=users[userId][0][1]
-    for poiPair in users[userId]:
-        newId=poiPair[0]
-        if newId!=oldId:
-            if oldId not in stayTimes:
-                stayTimes[oldId]=[]
-            if timeSpent==0:
-                timeSpent=10
-            stayTimes[oldId].append(timeSpent)
-            oldTime=poiPair[1]
-        else:
-            timeSpent=poiPair[1]-oldTime
-        oldId=newId
+with open('Itineraries.txt','w') as f:
+    for userId in users:
+        f.write(str(userId)+' ')
+        oldId=users[userId][0][0]
+        newId=0
+        timeSpent=0
+        oldTime=users[userId][0][1]
+        numOfPhotos=0
+        for poiPair in users[userId]:
+            newId=poiPair[0]
+            if newId!=oldId:
+                if oldId not in stayTimes:
+                    stayTimes[oldId]=[]
+                if timeSpent==0:
+                    timeSpent=10
+                stayTimes[oldId].append(timeSpent)
+                f.write(str(oldId)+';'+str(timeSpent)+';'+str(numOfPhotos)+' ')
+                numOfPhotos=0
+                oldTime=poiPair[1]
+            else:
+                numOfPhotos+=1
+                timeSpent=poiPair[1]-oldTime
+            oldId=newId
+        f.write('\n')
 
 with open('POIs_StayTime.txt','w') as f:
     for poiId in stayTimes:
