@@ -79,7 +79,7 @@ with open('dictionary.txt','w') as f:
 
 toRemove=[]
 for userId in users:
-    if len(users[userId])==1:   #Remove users with just one photo
+    if (len(users[userId])==1 or len(users[userId])==0):   #Remove users with just one photo
         toRemove.append(userId)
 for userId in toRemove:
     users.pop(userId)
@@ -123,6 +123,8 @@ with open('Itineraries.txt','w') as f:
                     stayTimes[oldId]=[]
                 if timeSpent==0:
                     timeSpent=10
+                if timeSpent>86400:
+                    timeSpent=10
                 stayTimes[oldId].append(timeSpent)
                 f.write(str(oldId)+';'+str(timeSpent)+';'+str(numOfPhotos)+' ')
                 numOfPhotos=0
@@ -131,6 +133,14 @@ with open('Itineraries.txt','w') as f:
                 numOfPhotos+=1
                 timeSpent=poiPair[1]-oldTime
             oldId=newId
+        if oldId not in stayTimes:
+            stayTimes[oldId]=[]
+        if timeSpent==0:
+            timeSpent=10
+        if timeSpent>86400:
+            timeSpent=10
+        stayTimes[oldId].append(timeSpent)
+        f.write(str(oldId)+';'+str(timeSpent)+';'+str(numOfPhotos)+' ')
         f.write('\n')
 
 with open('POIs_StayTime.txt','w') as f:
