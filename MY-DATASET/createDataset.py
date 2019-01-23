@@ -10,6 +10,31 @@ import flickrapi
 import time
 import datetime
 
+def coorDistance(lat1,lon1,lat2,lon2):
+    latI=radians(lat1)
+    lonI=radians(lon1)
+    latJ=radians(lat2)
+    lonJ=radians(lon2)
+    dlon = lonJ - lonI
+    dlat = latJ - latI
+    a = sin(dlat/2)**2 + cos(latI)*cos(latJ)*sin(dlon/2)**2
+    c = 2 * atan2(sqrt(a), sqrt(1 - a))
+    R=6373.0
+    return R*c
+
+def findClosestPOI(myLat,myLon,pois):
+    minDist=300000
+    closestId=-1
+    for poiId in pois:
+        poiLat=pois[poiId]['lat']
+        poiLon=pois[poiId]['lon']
+        dist=coorDistance(myLat,myLon,poiLat,poiLon)
+        if dist<minDist:
+              minDist=dist
+              closestId=poiId
+    return closestId
+
+
 centerName='Athens'
 page=wikipedia.page(centerName)
 centerLat=float(page.coordinates[0])
@@ -19,16 +44,16 @@ api_key='8d1a7267a8e07b28c8997b8bf7ccabe8'
 api_secret='66a3513acdb609b2'
 
 flickr = flickrapi.FlickrAPI(api_key, api_secret, format='parsed-json')
-photos = flickr.photos.search(min_taken_date='2018-12-01',accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
+photos = flickr.photos.search(min_taken_date='2018-01-01',accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
 numOfPages = photos['photos']['pages']
 
 #GETTING ALL PHOTOS
 photoDict=[]
 
 for page in range(1,numOfPages+1):
-    #print(page)
+    print(page)
     try:
-        photos = flickr.photos.search(min_taken_date='2018-12-01', page=page,accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
+        photos = flickr.photos.search(min_taken_date='2018-01-01', page=page,accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
         for photo in photos['photos']['photo']:
                 photoDict.append(photo)
     except:
@@ -37,9 +62,37 @@ for page in range(1,numOfPages+1):
 pois={}
 rawTexts={}
 poiTitleToId={}
-users={}
-print(len(photoDict))
 myId=1
+
+wikiRes=wikipedia.geosearch(centerLat,centerLon,results=1000,radius=10000)
+for ind,title in enumerate(wikiRes):
+    print(ind)
+    try:
+        page=wikipedia.page(title)
+        plat,plon=map(float,page.coordinates)
+        poiTitleToId[title]=myId
+        pois[myId]={'name':title,'lat':plat,'lon':plon}
+        rawTexts[myId]=page.content
+        myId+=1
+    except:
+        continue
+
+with open('dictionary.txt','w') as f:
+    for title in poiTitleToId:
+        f.write(title+'\t'+str(poiTitleToId[title])+'\t'+str(pois[poiTitleToId[title]]['lat'])+' '+str(pois[poiTitleToId[title]]['lon'])+'\n')
+
+for rawId in rawTexts:
+    with open('rawTexts/'+str(rawId)+'.txt','w') as f:
+        f.write(str(rawTexts[rawId])+'\n')
+
+with open('Distances.txt','w') as f:
+    for poiI in pois:
+        for poiJ in pois:
+            dist=coorDistance(pois[poiI]['lat'],pois[poiI]['lon'],pois[poiJ]['lat'],pois[poiJ]['lon'])
+            f.write(str(poiI)+' '+str(poiJ)+' '+str(dist)+'\n')
+
+users={}
+
 for ind,photo in enumerate(photoDict):
     print(ind)
     try:
@@ -49,40 +102,13 @@ for ind,photo in enumerate(photoDict):
         lon=float(info['photo']['location']['longitude'])
         timeTaken=info['photo']['dates']['taken']
         timeStamp=int(time.mktime(datetime.datetime.strptime(timeTaken, '%Y-%m-%d %H:%M:%S').timetuple()))
-        closest=wikipedia.geosearch(lat,lon,results=1,radius=200)
-        if closest!=[]:
-            if closest[0] not in poiTitleToId:
-                page=wikipedia.page(closest[0])
-                try:
-                    plat,plon=map(float,page.coordinates)
-                except:
-                    plat=lat
-                    plon=lon
-                poiTitleToId[closest[0]]=myId
-                pois[myId]={'name':closest[0],'lat':plat,'lon':plon}
-                rawTexts[myId]=page.content
-                myId+=1
-            poiId=poiTitleToId[closest[0]]
+        closestId=findClosestPOI(lat,lon,pois)
+        if closestId != -1:
             if owner not in users:
                 users[owner]=[]
-            users[owner].append((poiId,timeStamp))
+            users[owner].append((closestId,timeStamp))
     except:
         continue
-
-for rawId in rawTexts:
-    with open(str(rawId)+'.txt','w') as f:
-        f.write(str(rawTexts[rawId])+'\n')
-
-with open('dictionary.txt','w') as f:
-    for title in poiTitleToId:
-        f.write(title+'\t'+str(poiTitleToId[title])+'\t'+str(pois[poiTitleToId[title]]['lat'])+' '+str(pois[poiTitleToId[title]]['lon'])+'\n')
-
-toRemove=[]
-for userId in users:
-    if (len(users[userId])==1 or len(users[userId])==0):   #Remove users with just one photo
-        toRemove.append(userId)
-for userId in toRemove:
-    users.pop(userId)
 
 for userId in users:
     users[userId].sort(key=lambda x:x[1])
@@ -93,19 +119,19 @@ for userId in users:
 for userId in toRemove:
     users.pop(userId)
 
-with open('Distances.txt','w') as f:
-    for poiI in pois:
-        for poiJ in pois:
-            latI=radians(pois[poiI]['lat'])
-            lonI=radians(pois[poiI]['lon'])
-            latJ=radians(pois[poiJ]['lat'])
-            lonJ=radians(pois[poiJ]['lon'])
-            dlon = lonJ - lonI
-            dlat = latJ - latI
-            a = sin(dlat/2)**2 + cos(latI)*cos(latJ)*sin(dlon/2)**2
-            c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            R=6373.0
-            f.write(str(poiI)+' '+str(poiJ)+' '+str(R*c)+'\n')
+toRemove=[]
+for userId in users:
+    firstId=users[userId][0][0]
+    onePOI=True
+    for pair in users[userId]:
+        currId=pair[0]
+        if currId!=firstId:
+            onePOI=False
+            break
+    if onePOI==True:
+        toRemove.append(userId)
+for userId in toRemove:
+    users.pop(userId)
 
 stayTimes={}
 with open('Itineraries.txt','w') as f:
@@ -149,7 +175,6 @@ with open('POIs_StayTime.txt','w') as f:
         f.write(str(poiId)+' '+str(stayTimes[poiId])+'\n')
 
 texts=list(rawTexts.values())
-nltk.download('wordnet')
 
 stemmer = SnowballStemmer('english')
 def lemmatize_stemming(text):
@@ -198,15 +223,18 @@ with open('POIs_Vectors.txt','w') as f:
         f.write('\n')
         count+=1
 
-with open('Users_Profiles.txt','w') as f:
-    for userId in users:
-        numPhotos=0
-        vec=np.zeros(10)
-        for pair in users[userId]:
-            poiId=pair[0]
-            vec=np.add(vec,wikis[poiId-1,:])
-            numPhotos+=1
-        vec=[x/numPhotos for x in vec]
-        for num in vec:
-            f.write(str(num)+' ')
-        f.write('\n')
+with open('Users_Profiles.txt','w') as fw:
+    with open('Itineraries.txt','r') as fr:
+        spamreader=csv.reader(fr,delimiter=' ')
+        for row in spamreader:
+            vec=np.zeros(10)
+            timeSpent=0
+            for visit in row[1:-1]:
+                print(visit)
+                poiId,poiTime,numOfPhotos=map(int,visit.split(';'))
+                vec=np.add(vec,[poiTime*x for x in wikis[poiId-1,:]])
+                timeSpent+=poiTime
+            vec=[x/timeSpent for x in vec]
+            for num in vec:
+                fw.write(str(num)+' ')
+            fw.write('\n')

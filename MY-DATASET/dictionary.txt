@@ -1,8 +1,0 @@
-Church of the Pantanassa, Athens	1	37.9765 23.7261
-Doukissis Plakentias station	2	38.02336111 23.83305556
-Tzistarakis Mosque	3	37.976 23.727
-Syntagma metro station	4	37.97527778 23.73527778
-Lilian Voudouri Music Library of Greece	5	37.9811 23.754
-Psyri	6	37.97777778 23.725
-Athens Lawn Tennis Club	7	37.97 23.73444444
-Athena Promachos	8	37.97166667 23.72583333

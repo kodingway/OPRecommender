@@ -57,5 +57,5 @@ def clusterMetrics(clusterIds,pointsDic):
         for l in cluster:
             clusterPoints.append(pointsDic[l])
         meanList.append(np.mean(clusterPoints,axis=0))
-        varList.append(np.var(clusterPoints,axis=0))
+        varList.append(np.linalg.norm(np.var(clusterPoints,axis=0)))
     return meanList,varList
