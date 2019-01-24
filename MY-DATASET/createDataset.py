@@ -29,13 +29,13 @@ def findClosestPOI(myLat,myLon,pois):
         poiLat=pois[poiId]['lat']
         poiLon=pois[poiId]['lon']
         dist=coorDistance(myLat,myLon,poiLat,poiLon)
-        if dist<minDist:
+        if dist<minDist and dist<0.2:   #Closest POI in radius 200m
               minDist=dist
               closestId=poiId
     return closestId
 
 
-centerName='Athens'
+centerName='Rome'
 page=wikipedia.page(centerName)
 centerLat=float(page.coordinates[0])
 centerLon=float(page.coordinates[1])
@@ -44,16 +44,16 @@ api_key='8d1a7267a8e07b28c8997b8bf7ccabe8'
 api_secret='66a3513acdb609b2'
 
 flickr = flickrapi.FlickrAPI(api_key, api_secret, format='parsed-json')
-photos = flickr.photos.search(min_taken_date='2018-01-01',accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
+photos = flickr.photos.search(min_taken_date='2015-01-01',accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
 numOfPages = photos['photos']['pages']
 
-#GETTING ALL PHOTOS
+#GET ALL PHOTOS
 photoDict=[]
 
 for page in range(1,numOfPages+1):
     print(page)
     try:
-        photos = flickr.photos.search(min_taken_date='2018-01-01', page=page,accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
+        photos = flickr.photos.search(min_taken_date='2015-01-01', page=page,accuracy=16,lat=centerLat,lon=centerLon,radius=10,in_gallery=True)
         for photo in photos['photos']['photo']:
                 photoDict.append(photo)
     except:
@@ -64,6 +64,7 @@ rawTexts={}
 poiTitleToId={}
 myId=1
 
+#GET ALL POIS
 wikiRes=wikipedia.geosearch(centerLat,centerLon,results=1000,radius=10000)
 for ind,title in enumerate(wikiRes):
     print(ind)
@@ -210,8 +211,7 @@ for txtInd,cor in enumerate(bow_corpus):
         A[pair[0],txtInd]=pair[1]
 
 u,s,vh = np.linalg.svd(A,full_matrices=False)
-#wikis=np.matmul(np.diag(s),vh)  #XREIAZETAI????
-wikis=vh
+wikis=np.matmul(np.diag(s),vh)
 wikis=wikis.T[:,:10]
 count=1
 
