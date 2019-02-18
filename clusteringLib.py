@@ -50,12 +50,17 @@ def kmeans(k, testSet, pointsDic, init='random'):
     return clusterIds
 
 def clusterMetrics(clusterIds,pointsDic):
-    meanList=[]
-    varList=[]
+    meanList=[] #Cluster centroids
+    distList=[] #Average squared distance from cluster centroids
     for cluster in clusterIds:
         clusterPoints=[]
         for l in cluster:
             clusterPoints.append(pointsDic[l])
-        meanList.append(np.mean(clusterPoints,axis=0))
-        varList.append(np.linalg.norm(np.var(clusterPoints,axis=0)))
-    return meanList,varList
+        clusterMean=np.mean(clusterPoints,axis=0)
+        meanList.append(clusterMean)
+        sumOfSquaredDist=0
+        for cp in clusterPoints:
+            dist=np.linalg.norm(np.subtract(clusterMean,cp))
+            sumOfSquaredDist+=dist**2
+        distList.append(sumOfSquaredDist/len(clusterPoints))
+    return meanList,distList

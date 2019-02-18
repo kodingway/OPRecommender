@@ -34,7 +34,7 @@ def heuristicsRep(rep):
     for k in klist:
         #print(rep,k)
         testUsers = []
-        testSet = random.sample(range(1,len(users)+1), k)
+        testSet = random.sample(list(users.keys()), k)
         for l in testSet:
             testUsers.append(users[l])
 
@@ -57,7 +57,7 @@ def heuristicsRep(rep):
 ########################################################
 scoring = 'sum'
 totalReps = 500
-B = 420  # Budget (minutes)
+B = 300  # Budget (minutes)
 klist=[1,2,5,10,20]
 
 totalDistanceScore = []

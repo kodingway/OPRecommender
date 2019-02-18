@@ -17,10 +17,10 @@ m=100 #Number of users
 totalScores = []
 B=420
 scoring = 'sum'
-totalReps=10
-klist=[1,2,3,4,5,10,20,50]
+totalReps=500
+klist=[1,2,5,10,20,50,100]
 ########## VISUALIZATION ##########
-# pca = PCA(n_components=2).fit(list(users.values()))
+# pca = PCA(n_components=2).fit(list(pois.values()))
 ###################################
 
 def clusteringRep(rep):
@@ -32,7 +32,7 @@ def clusteringRep(rep):
         if pathCost([s,t],stayTime,graph) <= B:
             break
     
-    testSet = random.sample(range(1,len(users)+1), m)
+    testSet = random.sample(list(users.keys()), m)
     kscores=[]
     for k in klist:
         # print(rep,k)
@@ -43,33 +43,46 @@ def clusteringRep(rep):
         # reduced_data = pca.transform(list(pois.values()))
         # plt.figure()
         # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10)
+        # plt.title('User groups')
+        # plt.legend([])
         # reduced_data = pca.transform([pois[s],pois[t]])
         # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='P')
+        # legend=['POIs']
+        # cols=['red','darkgreen','orange']
         # for ind,cluster in enumerate(clusterIds):
         #     reduced_data = pca.transform([users[clusterId] for clusterId in cluster])
-        #     plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10,marker='D')
-        #     reduced_data = pca.transform([meanList[ind]])
-        #     plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='x',c='k')
-        #     plt.show()
+        #     plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10,marker='D',c=cols[ind])
+            # reduced_data = pca.transform([meanList[ind]])
+            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='x',c='k')
+            # legend.append('Cluster '+str(ind+1))
+        # plt.legend(legend)
+        # plt.show()
         ###################################
         clusterProfits=[]
         # plt.figure()
+        # plt.title('Group paths')
+        # reduced_data = pca.transform(list(pois.values()))
+        # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10)
+        # legend=['POIs']
+        # siz=60
         for ind,cluster in enumerate(clusterIds):
-            # reduced_data = pca.transform(list(pois.values()))
-            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10)
             # reduced_data = pca.transform([users[clusterId] for clusterId in cluster])
             # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=10,marker='D')
             testUsers=[]
             for l in cluster:
                 testUsers.append(users[l])
-            clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoring,stayTime,B,pois)
+            clusterPath = bestRatioPlusPath(s, t, [np.mean(testUsers,axis=0)],graph,scoring,stayTime,B,pois)
             # reduced_data = pca.transform([pois[poiId] for poiId in clusterPath])
-            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=50,marker='P')
+            # plt.scatter(reduced_data[:,0],reduced_data[:,1],s=siz,marker='P',c=cols[ind])
+            # legend.append('Path '+str(ind+1))
+            # siz-=10
             # for ind,dat in enumerate(reduced_data):
-            #     plt.text(dat[0],dat[1],str(ind),color='k',fontsize=10)
+                # plt.text(dat[0],dat[1],str(ind),color='k',fontsize=10)
             # plt.show()
             clusterProfits.append(pathProfit(clusterPath, testUsers, scoring, pois))
             # plt.clf()
+        # plt.legend(legend)
+        # plt.show()
         kscores.append(sum(clusterProfits))
     return kscores
 

@@ -46,8 +46,6 @@ def categoryRep(rep):
         sampleUsers[userId]=users[userId]
     kscores=[]
     for k in klist:
-        with open('log.txt','a') as f:
-            f.write(str(rep)+' '+str(k)+'\n')
         clusterIds = kmeans(k,list(pois.keys()),pois,init='kmeans++')
         meanList,_ = clusterMetrics(clusterIds,pois)
         catUsers={}
@@ -66,18 +64,15 @@ def categoryRep(rep):
             if testUsers==[]:
                 clusterProfits.append(0)
             else:
-                testPOIs={}
-                for l in cluster:
-                    testPOIs[l]=pois[l]
-                clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoring,stayTime,B,testPOIs)
-                clusterProfits.append(pathProfit(clusterPath, testUsers, scoring, testPOIs))
+                clusterPath = bestRatioPlusPath(s, t, testUsers,graph,scoring,stayTime,B,pois)
+                clusterProfits.append(pathProfit(clusterPath, testUsers, scoring, pois))
         kscores.append(sum(clusterProfits))
     return kscores
 
-klist=[1,2,3,4,5]
+klist=[1,2,5,10,20,50,100]
 m=100
 B=420
-totalReps=200
+totalReps=500
 scoring='sum'
 results=[]
 numOfCores=int(sys.argv[1])
@@ -88,5 +83,5 @@ if numOfCores==1:
 else:
     results = Parallel(n_jobs=numOfCores)(delayed(categoryRep)(rep) for rep in range(totalReps))
 
-with open('categoryClustering200.dat','w') as f:
+with open('categoryClusteringRome100.dat','w') as f:
     f.write(str(results))

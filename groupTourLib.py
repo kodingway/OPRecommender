@@ -6,7 +6,7 @@ def readGraph(city):
     with open("Dataset/" + city + "/Distances.txt") as csvFile:
         csvReader = csv.reader(csvFile, delimiter=' ')
 
-        walkSpeed = 10/60  # (km/min)
+        walkSpeed = 4/60  # (km/min)
         
         count = 1
         for row in csvReader:
@@ -27,14 +27,8 @@ def readUsers(city):
         csvReader = csv.reader(csvFile, delimiter=' ')
 
         users = {}
-        userId = 1
         for row in csvReader:
-            users[userId]=list(map(float,row[:8]))
-            userId += 1
-    
-    ########## NORMALIZATION ##########
-    # for userId in users:
-        # users[userId]/=np.linalg.norm(users[userId])
+            users[row[0]]=list(map(float,[x for x in row[1:] if x!='']))
 
     return users
 
@@ -44,15 +38,11 @@ def readPOIs(city,graphSize):
 
         pois = {}
         for row in csvReader:
-            pois[int(row[0])]=list(map(float,row[1:9]))
+            pois[int(row[0])]=list(map(float,[x for x in row[1:] if x!='']))
 
     for key in range(1,graphSize):
         if key not in list(pois.keys()):
             pois[key]=pois[1]  #some pois don't have vectors
-
-    ########## NORMALIZATION ##########
-    # for poiId in pois:
-        # pois[poiId]/=np.linalg.norm(pois[poiId])
 
     return pois
 
@@ -75,22 +65,26 @@ def pathCost(path, stayTime, graph):
     result=0
     for i,node in enumerate(path[0:-1]):
         result+=stayTime[node]+graph[node,path[i+1]]
+    # result+=stayTime[path[-1]]  #Add the stayTime of the last node
     return(result)
 
 def pathProfit(path,testUsers,scoring,pois):
     if scoring=='sum':
         result=0
         for node in path[1:-1]:
+        # for node in path:
             result+=sum(np.matmul(testUsers,pois[node]))
     elif scoring=='min':
         result=[]
         for node in path[1:-1]:
+        # for node in path:
             result.append(np.matmul(testUsers,pois[node]))
         result=np.sum(result,axis=0)
         result=np.amin(result)
     elif scoring=='fair':
         result=[]
         for node in path[1:-1]:
+        # for node in path:
             result.append(np.matmul(testUsers,pois[node]))
         result=np.sum(result,axis=0)
         result=np.mean(result)-0.5*np.std(result)
@@ -194,6 +188,7 @@ def bestRatioPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
             bestCost=pathCost(bestPath,stayTime,graph)
             for neigh in notInPath:
                 for nodeI in range(1,len(path)-1):
+                # for nodeI in range(len(path)):  #Start and end can be changed
                     potPath = path[:]
                     potPath[nodeI] = neigh
                     potProfit=pathProfit(potPath,testUsers,scoring,pois)                   
@@ -204,9 +199,58 @@ def bestRatioPlusPath(s, t, testUsers, graph, scoring, stayTime, B,pois):
                         bestProfit=potProfit
                         bestCost=potCost   
         if changedPath==False:
-            return path
-        path = bestPath[:]
+            break
+        path=bestPath[:]
+    return(bestPath)
 
+########## BEST RATIO+ HEURISTIC (WITH SCORING TABLE) ##########
+################################################################
+def bestRatioPlusPathTABLE(s, t, graph, scoring, stayTime, B, pois, table):
+    ###################################################################
+    # Table is a dictionary / each entry has a poiId and a value
+    # equal to the overall satisfaction of the group for the given POI.
+    ###################################################################
+    path=[s,t]
+    while True:
+        notInPath = []
+        for neigh in pois:
+            if neigh not in path:
+                notInPath.append(neigh)
+        changedPath=False
+        bestPath = path[:]
+        bestProfit=0
+        bestCost=pathCost(bestPath,stayTime,graph)
+        for neigh in notInPath:
+            potPath = path[:]
+            potPath.insert(-1,neigh)
+            potProfit = np.sum([table[poiId] for poiId in potPath])
+            potCost = pathCost(potPath,stayTime,graph)
+            if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
+                changedPath=True
+                bestPath = potPath[:]
+                bestProfit=potProfit
+                bestCost=potCost
+        if changedPath==False:
+            bestProfit=0
+            for poiId in bestPath:
+                bestProfit+=table[poiId]
+            bestCost=pathCost(bestPath,stayTime,graph)
+            for neigh in notInPath:
+                for nodeI in range(1,len(path)-1):
+                # for nodeI in range(len(path)):  #Start and end can be changed
+                    potPath = path[:]
+                    potPath[nodeI] = neigh
+                    potProfit = np.sum([table[poiId] for poiId in potPath])
+                    potCost=pathCost(potPath,stayTime,graph)
+                    if (potProfit/potCost>bestProfit/bestCost) and (potCost <= B):
+                        changedPath=True
+                        bestPath = potPath[:]
+                        bestProfit=potProfit
+                        bestCost=potCost
+        if changedPath==False:
+            break
+        path = bestPath[:]
+    return(bestPath)
 
 ########## BEST RATIO++ HEURISTIC ##########
 ############################################
