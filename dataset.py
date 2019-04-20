@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 
-city = "Rome"
+city = "myRome"
 graph = readGraph(city)
 users = readUsers(city)
 pois = readPOIs(city,len(graph))
@@ -28,7 +28,7 @@ poiVal=[x/sum(poiVal) for x in poiVal]
 
 plt.figure()
 plt.bar(poiBins[:-1],poiVal,align='edge',width=np.diff(poiBins),facecolor='red',edgecolor='k',alpha=0.6)
-plt.bar(userBins[:-1],userVal,align='edge',width=np.diff(userBins),facecolor='green',edgecolor='k',alpha=0.5)
+plt.bar(userBins[:-1],userVal,align='edge',width=np.diff(userBins),facecolor='green',edgecolor='k',alpha=0.7)
 plt.title('Users & POIs squared deviation distribution')
 plt.legend(['POIs','Users'])
 plt.savefig('Plots/Dataset/dataVariance.png')
@@ -42,7 +42,7 @@ for user in list(users.values()):
         # preferenceList.append(np.dot(user,poi)/(np.linalg.norm(user)*np.linalg.norm(poi)))
         # preferenceList.append(1/(1+np.linalg.norm(np.subtract(poi,user))))
 
-prefVal,prefBins=np.histogram(preferenceList,bins=50)
+prefVal,prefBins=np.histogram(preferenceList,bins=100)
 prefVal=[x/sum(prefVal) for x in prefVal]
 plt.figure()
 plt.bar(prefBins[:-1],prefVal,align='edge',width=np.diff(prefBins),edgecolor='k')

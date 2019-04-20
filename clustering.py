@@ -7,7 +7,7 @@ import sys
 from joblib import Parallel, delayed
 from clusteringLib import *
 
-city = "Rome"
+city = "myRome"
 graph = readGraph(city)
 users = readUsers(city)
 pois = readPOIs(city,len(graph))
@@ -17,7 +17,7 @@ m=100 #Number of users
 totalScores = []
 B=420
 scoring = 'sum'
-totalReps=500
+totalReps=200
 klist=[1,2,5,10,20,50,100]
 ########## VISUALIZATION ##########
 # pca = PCA(n_components=2).fit(list(pois.values()))

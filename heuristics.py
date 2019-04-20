@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 import sys
 
-city = "Rome"
+city = "myRome"
 graph = readGraph(city)
 users = readUsers(city)
 pois = readPOIs(city,len(graph))
